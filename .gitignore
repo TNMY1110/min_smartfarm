@@ -2,3 +2,8 @@
 /test
 plant_images/
 *.csv
+torch_libs/
+__pycache__/
+*.pyc
+*.pth
+*.db
