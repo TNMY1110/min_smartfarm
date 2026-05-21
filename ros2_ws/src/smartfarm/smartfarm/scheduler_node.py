@@ -18,8 +18,8 @@ class SchedulerNode(Node):
         hour = now.hour
         minute = now.minute
 
-        # 매일 07:00, 19:00에 트리거 발행
-        if minute == 0 and hour in [7, 19]:
+        # 매일 00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00 촬영
+        if minute == 0 and hour % 3 == 0:
             timestamp = now.strftime('%Y-%m-%d %H:%M:%S')
             payload = json.dumps({
                 'timestamp': timestamp,

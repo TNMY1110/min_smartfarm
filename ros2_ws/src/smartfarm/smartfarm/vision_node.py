@@ -21,7 +21,7 @@ class VisionNode(Node):
     def __init__(self):
         super().__init__('vision_node')
         self.publisher = self.create_publisher(String, '/farm/growth', 10)
-
+        
         os.makedirs(SAVE_DIR, exist_ok=True)
 
         # CSV 초기화
@@ -54,7 +54,7 @@ class VisionNode(Node):
             cap.release()
 
         if self.cap is None:
-            self.get_logger().error('카메라를 찾을 수 없어요!')
+            self.get_logger().error('카메라를 찾을 수 없습니다!')
             return
 
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
@@ -74,8 +74,10 @@ class VisionNode(Node):
 
         # 타이머
         self.frame_timer = self.create_timer(2.0, self.process_frame)
+        # 테스트용 자동 촬영, 1분 주기로 촬영하도록 했음. 스케쥴러 노드와 연동한 후에 지워도 되긴 하는데 일단 남겨놓음
         self.save_timer = self.create_timer(60.0, self.scheduled_save)
-
+        # 스케쥴러 노드의 토픽 구독
+        self.sub_trigger = self.create_subscription(String, '/farm/capture_trigger', self.trigger_callback, 10)
         self.get_logger().info('vision_node 시작')
 
     def process_frame(self):
@@ -147,6 +149,10 @@ class VisionNode(Node):
                              green_area_cm2, self.latest_total_pixels, round(self.avg_fps, 1)])
 
         self.get_logger().info(f'저장 완료 - Green: {self.latest_green_ratio}% / 파일: {filename}')
+
+    def trigger_callback(self, msg):
+        self.scheduled_save()
+        self.get_logger().info('트리거 수신 → 촬영 저장')
 
     def destroy_node(self):
         self.cap.release()
