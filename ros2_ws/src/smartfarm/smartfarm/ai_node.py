@@ -23,6 +23,10 @@ class AiNode(Node):
 
         self.get_logger().info('모델 로드 중...')
         start = time.time()
+
+        # 라즈베리파이 메모리 최적화
+        torch.set_num_threads(1)
+
         self.model = models.resnet50()
         self.model.fc = nn.Sequential(
             nn.Dropout(0.3),

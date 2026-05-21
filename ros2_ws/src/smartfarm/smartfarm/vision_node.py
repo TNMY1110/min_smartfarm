@@ -42,7 +42,21 @@ class VisionNode(Node):
             self.get_logger().info('캘리브레이션 로드 완료')
 
         # 카메라 초기화
-        self.cap = cv2.VideoCapture(0)
+        self.cap = None
+        for i in range(5):
+            cap = cv2.VideoCapture(i)
+            if cap.isOpened():
+                ret, frame = cap.read()
+                if ret and frame is not None:
+                    self.cap = cap
+                    self.get_logger().info(f'카메라 인덱스 {i} 사용')
+                    break
+            cap.release()
+
+        if self.cap is None:
+            self.get_logger().error('카메라를 찾을 수 없어요!')
+            return
+
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
@@ -59,7 +73,7 @@ class VisionNode(Node):
         self.latest_total_pixels = 0
 
         # 타이머
-        self.frame_timer = self.create_timer(0.1, self.process_frame)
+        self.frame_timer = self.create_timer(2.0, self.process_frame)
         self.save_timer = self.create_timer(60.0, self.scheduled_save)
 
         self.get_logger().info('vision_node 시작')
